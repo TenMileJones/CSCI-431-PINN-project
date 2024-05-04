@@ -1,2 +1,54 @@
-# Lets see if this works now
+# CSCI 431 Project: PINN Exploration
+
+This repository is a short exploration of using Physics-Informed Neural Networks (PINNs) to approximate sin waves. 
+
+### File Descriptions
+SIN_PINN.py tries to train a PINN that approximates a sin wave and saves it before graphing the network against a sin wave for comparisons sake. Training is done stochastically. Hyperparameters are easily modifiable to create different training architechtures. Boundary conditions are also straightforward to modify, add, and remove.
+
+graph_finished_networks.py will take a saved neural network file (ideally a .keras file) and graph it against a sin wave. It's helpful when you want to see how a network behaves with different inputs than the standard graph without having to retrain it.
+
+### Miscellaneous observations
+It likes to find the fake equilibrium around 0 unless nudged otherwise by boundary conditions.
+Worth investigating getting batch normalization to work, using different kernel initializers,
+and defining a custom activation function for the first layer could be good according to previous research.
+That said, for the purpose of rediscovering the sin wave, using a sin wave style activation function
+is probably cheating.
+
+### Stored model descriptions
+Below is documentation about the handful of saved .keras PINNs in this repository. All networks trained on 400 points from -4pi -> 4pi and boundary conditions for f(-pi/2) = -1, f(0) = 0, and f(pi/2) = 1, unless otherwise specified. The goal was to encourage sinusoidal behavior with a minimal amount of boundary points.
+
+- sin_attempt.keras: honestly don't remember. I think 8 fully connected w 20 nodes and no dropout.
+
+- first_dropout_attempt.keras: 100 epochs, 8 fully connected hidden layers with 20 nodes each with 0.5 dropout layers after each one. Promising.
+    
+- 1000_dropout_attempt.keras: 1000 epochs, starts with a 60 node fullyconnected layer with 0.5 dropout before the same 8x20 with .5 dropout as dropout_attempt.keras. Seemed to find an equilibrium and overfit, but not at 0. Might be due to the boundary conditions pushing it upwards initially.
+
+- 300_FC_attempt.keras: 300 epochs, same structure as 1000_dropout_keras but without dropout layers. It still overfits, finding a weird equilibrium.
+
+- 200_dropout_attempt.keras: 200 epochs, same structure as 1000_dropout_keras. Goal is to improve upon first_dropout_attempt.keras without overfitting. However, it overfits. I am growing skeptical of the 60 node layer. Is it encouraging overfitting?
+
+- 100_dropout_attempt.keras: It's official: 60 node layer is messing things up.
+
+- 4_layer_approach.keras: New approach; 4 hidden layers 20 nodes with .5 dropout, 100 epochs. New boundary conditions: f(0), f(2.5pi), f(-2.5pi). Stays within bounds well, but has weird cubic-like inflexion near origin; x values [-1.5 -> 0]
+
+- 4_layer_4_bounds.keras: Same as 4_layer_approach, but removed f(0) and add f(1.5pi) and f(-1.5pi). PROMISING!!!!!
+
+- 4_layer_further_bounds: Same as above, but changed two bounds: +-1.5pi -> +-3.5pi. 
+
+- wide_attempt.keras: 4x20 + dropout, -10->10, bounds +-6.5pi, +-7.5pi, +-8.5pi. 100 epochs. Getting somewhere, but could likely do with more training. -> GOT OVERWRITTEN, AND THE DROPOUT DIDN'T TREAT IT AS KINDLY THIS TIME. 
+
+- wide_stabilized_attempt.keras: [NOT SAVED] same as above but 6x20 and added +-0.5pi to bounds, shifted +-6.5pi to +-9.5pi. Found wrong equilibrium, 6 layers too many?
+
+- 2000_wide_attempt: going for gold. same architechture as wide_attempt.keras, with 2000 epochs: 
+
+
+
+### Future development ideas
+- print error to help with model development. That would have been smart.
+
+- test with additional boundary conditions; consider different combos. add +-pi and +-1.5pi, then try removing +- pi to see if it can figure out the inflection point on its own. Add +-2.5pi and see if it helps?
+
+- different kernel initializers, such that models aren't encouraged to converge at bad equilibria.
+
+- batch normalization might change how models tend to converge or allow for smaller architechtures.
 
